@@ -44,6 +44,7 @@ namespace Sustainsys.Saml2.Mvc
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "CommandResult")]
         public ActionResult SignIn()
         {
+            
             var result = CommandFactory.GetCommand(CommandFactory.SignInCommandName).Run(
                 Request.ToHttpRequestData(),
                 Options);
