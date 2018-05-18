@@ -17,6 +17,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Web.Hosting;
 using System.IdentityModel.Selectors;
 using System.IdentityModel.Tokens;
+using System.Configuration;
 
 namespace SampleOwinApplication
 {
@@ -53,87 +54,106 @@ namespace SampleOwinApplication
 
         private static Saml2AuthenticationOptions CreateSaml2Options()
         {
-            var spOptions = CreateSPOptions();
+            var spOptions = CreateSPOptions("arxspan");
             var Saml2Options = new Saml2AuthenticationOptions(false)
             {
-                SPOptions = spOptions
+                SPOptions = spOptions,
+                AuthenticationType = "arxspan",
+                Caption = "arxspan"
             };
 
-            var idp = new IdentityProvider(new EntityId("https://stubidp.sustainsys.com/Metadata"), spOptions)
+            var idp = new IdentityProvider(new EntityId("http://www.okta.com/exkez48ebtXNSGr3g0h7"), spOptions)
                 {
                     AllowUnsolicitedAuthnResponse = true,
                     Binding = Saml2BindingType.HttpRedirect,
-                    SingleSignOnServiceUrl = new Uri("https://stubidp.sustainsys.com")
+                    SingleSignOnServiceUrl = new Uri("https://dev-871818.oktapreview.com/app/beldev871818_arxspansaml_1/exkez48ebtXNSGr3g0h7/sso/saml")
                 };
 
             idp.SigningKeys.AddConfiguredKey(
                 new X509Certificate2(
                     HostingEnvironment.MapPath(
-                        "~/App_Data/stubidp.sustainsys.com.cer")));
+                        "~/App_Data/okta.cert")));
+            new Federation("http://localhost:52071/ Federation", true, Saml2Options);
 
-            Saml2Options.IdentityProviders.Add(idp);
+            Saml2Options.IdentityProviders.Add(idp);            
+
+            var spOptions2 = CreateSPOptions("belatrix");
+            var Saml2Options2 = new Saml2AuthenticationOptions(false)
+            {
+                SPOptions = spOptions2,
+                AuthenticationType = "belatrix",
+                Caption = "belatrix"
+            };
+
+            var idp2 = new IdentityProvider(new EntityId("https://aax0038.my.centrify.com/ce0d8092-49bf-4e73-8306-5a5b2c2eb39c"), spOptions)
+            {
+                AllowUnsolicitedAuthnResponse = true,
+                Binding = Saml2BindingType.HttpRedirect,
+                SingleSignOnServiceUrl = new Uri("https://aax0038.my.centrify.com/applogin/appKey/ce0d8092-49bf-4e73-8306-5a5b2c2eb39c/customerId/AAX0038")
+            };
+
+            idp2.SigningKeys.AddConfiguredKey(
+                new X509Certificate2(
+                    HostingEnvironment.MapPath(
+                        "~/App_Data/centrify.cert")));
+
+            Saml2Options2.IdentityProviders.Add(idp2);
 
             // It's enough to just create the federation and associate it
             // with the options. The federation will load the metadata and
             // update the options with any identity providers found.
-            new Federation("http://localhost:52071/Federation", true, Saml2Options);
+            new Federation("http://localhost:52071/ Federation", true, Saml2Options2);
 
             return Saml2Options;
         }
 
-        private static SPOptions CreateSPOptions()
+        private static SPOptions CreateSPOptions(string optionName)
         {
-            var swedish = CultureInfo.GetCultureInfo("sv-se");
-
-            var organization = new Organization();
-            organization.Names.Add(new LocalizedName("Sustainsys", swedish));
-            organization.DisplayNames.Add(new LocalizedName("Sustainsys AB", swedish));
-            organization.Urls.Add(new LocalizedUri(new Uri("http://www.Sustainsys.se"), swedish));
-
             var spOptions = new SPOptions
             {
-                EntityId = new EntityId("http://localhost:57294/Saml2"),
-                ReturnUrl = new Uri("http://localhost:57294/Account/ExternalLoginCallback"),
-                DiscoveryServiceUrl = new Uri("http://localhost:52071/DiscoveryService"),
-                Organization = organization
+                EntityId = new EntityId(ConfigurationManager.AppSettings["saml:baseurl"] + "/Saml2"),
+                ReturnUrl = new Uri(ConfigurationManager.AppSettings["saml:baseurl"] + "/Account/ExternalLoginCallback"),
+                ModulePath = string.Format("/{0}", optionName)
             };
 
             var techContact = new ContactPerson
             {
                 Type = ContactType.Technical
             };
-            techContact.EmailAddresses.Add("Saml2@example.com");
+            techContact.EmailAddresses.Add("arxspantestmail@gmail.com");
             spOptions.Contacts.Add(techContact);
 
             var supportContact = new ContactPerson
             {
                 Type = ContactType.Support
             };
-            supportContact.EmailAddresses.Add("support@example.com");
+            supportContact.EmailAddresses.Add("support@arxspan.com");
             spOptions.Contacts.Add(supportContact);
 
-            var attributeConsumingService = new AttributeConsumingService("Saml2")
+            var attributeConsumingService = new AttributeConsumingService(optionName)
             {
                 IsDefault = true,
             };
 
             attributeConsumingService.RequestedAttributes.Add(
-                new RequestedAttribute("urn:someName")
+                new RequestedAttribute("urn:Email")
                 {
-                    FriendlyName = "Some Name",
+                    FriendlyName = "Email",
                     IsRequired = true,
                     NameFormat = RequestedAttribute.AttributeNameFormatUri
                 });
 
-            attributeConsumingService.RequestedAttributes.Add(
-                new RequestedAttribute("Minimal"));
-
             spOptions.AttributeConsumingServices.Add(attributeConsumingService);
 
             spOptions.ServiceCertificates.Add(new X509Certificate2(
-                AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "/App_Data/Sustainsys.Saml2.Tests.pfx"));
+                AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "/App_Data/Sustainsys.Saml2.Tests.pfx", string.Empty,
+                                X509KeyStorageFlags.MachineKeySet));
+
+            var adsa = "fdsafdsa";
 
             return spOptions;
         }
+
+
     }
 }

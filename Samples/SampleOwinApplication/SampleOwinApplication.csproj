@@ -215,8 +215,11 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="Content\bootstrap.css.map" />
-    <Content Include="App_Data\Sustainsys.Saml2.Tests.pfx" />
     <Content Include="App_Data\stubidp.sustainsys.com.cer" />
+    <Content Include="App_Data\okta.cert" />
+    <Content Include="App_Data\centrify.cert" />
+    <Content Include="App_Data\Sustainsys.Saml2.Tests.pfx" />
+    <None Include="Properties\PublishProfiles\belatrix-demo - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <None Include="Scripts\jquery-2.1.1.intellisense.js" />
     <Content Include="Scripts\jquery-2.1.1.js" />
