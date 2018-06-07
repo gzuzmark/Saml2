@@ -73,7 +73,7 @@ namespace SampleOwinApplication
                 new X509Certificate2(
                     HostingEnvironment.MapPath(
                         "~/secure/okta.cert")));
-            new Federation("http://localhost:52071/ Federation", true, Saml2Options);
+            new Federation("http://localhost:52071/Federation", true, Saml2Options);
 
             Saml2Options.IdentityProviders.Add(idp);            
 
